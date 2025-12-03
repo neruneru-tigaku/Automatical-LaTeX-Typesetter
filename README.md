@@ -96,7 +96,13 @@ ruby typesetter.rb
 
 ### 複数ファイルの読み込み
 
-複数のMarkdownファイルを変換した場合、`master.tex` に `\input` コマンドを追加します：
+#### 方法1: 自動生成（推奨）
+
+`master_template.tex` を使用すると、`typesetter.rb` が自動的にすべての変換されたファイルを読み込む `master.tex` を生成します。テンプレートファイル内の `%%INPUT_FILES%%` マーカーが、すべての `\input` コマンドに置き換えられます。
+
+#### 方法2: 手動設定
+
+`master.tex` に直接 `\input` コマンドを追加します：
 
 ```latex
 \input{TeXfile/chapter1.tex}

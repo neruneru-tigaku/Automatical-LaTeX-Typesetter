@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 require 'fileutils'
+require 'shellwords'
 
 class AutomaticalTypesetter
   def initialize
@@ -9,6 +10,7 @@ class AutomaticalTypesetter
     @texfile_dir = 'TeXfile'
     @output_dir = 'output'
     @master_tex = 'master.tex'
+    @master_template = 'master_template.tex'
   end
 
   def run
@@ -18,7 +20,10 @@ class AutomaticalTypesetter
     check_directories
     
     # MDファイルをLaTeXに変換
-    convert_md_to_latex
+    tex_files = convert_md_to_latex
+    
+    # マスターファイルを生成（テンプレートがある場合）
+    generate_master_if_template_exists(tex_files)
     
     # マスターファイルをコンパイル
     compile_master
@@ -38,11 +43,12 @@ class AutomaticalTypesetter
   end
 
   def convert_md_to_latex
-    md_files = Dir.glob(File.join(@input_dir, '*.md'))
+    md_files = Dir.glob(File.join(@input_dir, '*.md')).sort
+    tex_files = []
     
     if md_files.empty?
       puts "警告: #{@input_dir}ディレクトリにMDファイルがありません"
-      return
+      return tex_files
     end
     
     md_files.each do |md_file|
@@ -51,16 +57,35 @@ class AutomaticalTypesetter
       
       puts "変換中: #{md_file} -> #{tex_file}"
       
-      # pandocコマンドを実行
-      cmd = "pandoc -f markdown -t latex --pdf-engine=lualatex #{md_file} -o #{tex_file}"
-      system(cmd)
+      # pandocコマンドを実行（シェルインジェクション対策）
+      system('pandoc', '-f', 'markdown', '-t', 'latex', '--pdf-engine=lualatex', md_file, '-o', tex_file)
       
       if $?.success?
         puts "  成功: #{tex_file}を作成しました"
+        tex_files << tex_file
       else
         puts "  警告: pandocが利用できません。手動で変換してください。"
-        puts "  コマンド: #{cmd}"
+        puts "  コマンド: pandoc -f markdown -t latex --pdf-engine=lualatex #{Shellwords.escape(md_file)} -o #{Shellwords.escape(tex_file)}"
       end
+    end
+    
+    tex_files
+  end
+  
+  def generate_master_if_template_exists(tex_files)
+    return unless File.exist?(@master_template)
+    
+    puts "マスターファイルを生成中..."
+    
+    # テンプレートファイルを読み込む
+    template = File.read(@master_template)
+    
+    # %%INPUT_FILES%%マーカーを\inputコマンドに置き換え
+    if template.include?('%%INPUT_FILES%%')
+      input_commands = tex_files.map { |tex_file| "\\input{#{tex_file}}" }.join("\n")
+      content = template.gsub('%%INPUT_FILES%%', input_commands)
+      File.write(@master_tex, content)
+      puts "  成功: #{@master_tex}を生成しました"
     end
   end
 
@@ -73,13 +98,12 @@ class AutomaticalTypesetter
     puts "マスターファイルをコンパイル中..."
     
     # LaTeXコンパイル（2回実行して目次等を確定）
-    2.times do |i|
-      cmd = "lualatex -output-directory=#{@output_dir} #{@master_tex}"
-      system(cmd)
+    2.times do
+      system('lualatex', "-output-directory=#{@output_dir}", @master_tex)
       
       unless $?.success?
         puts "  警告: LaTeXコンパイラが利用できません。"
-        puts "  コマンド: #{cmd}"
+        puts "  コマンド: lualatex -output-directory=#{Shellwords.escape(@output_dir)} #{Shellwords.escape(@master_tex)}"
         return
       end
     end
