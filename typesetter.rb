@@ -99,11 +99,11 @@ class AutomaticalTypesetter
     
     # LaTeXコンパイル（2回実行して目次等を確定）
     2.times do
-      system('lualatex', "-output-directory=#{@output_dir}", @master_tex)
+      system('lualatex', '-output-directory', @output_dir, @master_tex)
       
       unless $?.success?
         puts "  警告: LaTeXコンパイラが利用できません。"
-        puts "  コマンド: lualatex -output-directory=#{Shellwords.escape(@output_dir)} #{Shellwords.escape(@master_tex)}"
+        puts "  コマンド: lualatex -output-directory #{Shellwords.escape(@output_dir)} #{Shellwords.escape(@master_tex)}"
         return
       end
     end
