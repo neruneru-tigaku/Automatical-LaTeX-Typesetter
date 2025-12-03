@@ -1,0 +1,32 @@
+# LaTeX出力ファイル
+*.aux
+*.log
+*.out
+*.toc
+*.pdf
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# 出力ディレクトリ（PDFのみ除外）
+output/*.pdf
+output/*.aux
+output/*.log
+output/*.out
+output/*.toc
+output/*.synctex.gz
+
+# TeXfileディレクトリの生成ファイルは含める
+# （変換されたLaTeXファイルはバージョン管理に含めない場合）
+# TeXfile/*.tex
+
+# OS関連
+.DS_Store
+Thumbs.db
+
+# エディタ関連
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
