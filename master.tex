@@ -1,0 +1,29 @@
+\documentclass[a4paper,12pt]{ltjsarticle}
+
+% 日本語フォント設定
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+% ページ設定
+\usepackage[top=25mm,bottom=25mm,left=20mm,right=20mm]{geometry}
+
+% その他のパッケージ
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+% タイトル情報
+\title{文芸誌}
+\author{編集部}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% TeXfileディレクトリから変換されたLaTeXファイルを読み込む
+% 例: \input{TeXfile/sample.tex}
+\input{TeXfile/sample.tex}
+
+\end{document}
